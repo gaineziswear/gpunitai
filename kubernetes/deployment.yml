@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quantum-gpu
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: api
+        image: your-registry/api:polygon
+        resources:
+          limits:
+            nvidia.com/gpu: 2
