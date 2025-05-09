@@ -1,0 +1,10 @@
+flask
+redis
+rq
+requests
+transformers
+numpy
+pandas
+cuda-python
+cuquantum
+qibo

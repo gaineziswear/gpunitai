@@ -1,0 +1,1 @@
+# Logic to optimize GPU input and reach high MH/s targets

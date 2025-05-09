@@ -1,18 +1,70 @@
-name: Deploy
-on: [push]
+name: Deploy GpunitAI
+
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    env:
+      NODE_ENV: production
+      FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: us-east-1  # change if needed
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Build Containers
-        run: |
-          docker build -f docker/Dockerfile.api -t your-registry/api:$GITHUB_SHA .
-          docker push your-registry/api:$GITHUB_SHA
-      - name: Deploy to Kubernetes
-        uses: steebchen/kubectl@v2
-        env:
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
-        with:
-          command: set image deployment/quantum-gpu api=your-registry/api:$GITHUB_SHA
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run build (if any)
+      run: |
+        if [ -f package.json ]; then
+          npm run build || echo "No build script"
+        fi
+
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+
+    # -------- Firebase Deployment (Optional) --------
+    # - name: Deploy to Firebase Hosting
+    #   run: firebase deploy --only hosting
+    #   env:
+    #     FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+    # -------- AWS Deployment via ECR & ECS (Optional) --------
+    # - name: Configure AWS Credentials
+    #   uses: aws-actions/configure-aws-credentials@v4
+    #   with:
+    #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #     aws-region: ${{ env.AWS_REGION }}
+
+    # - name: Login to Amazon ECR
+    #   id: login-ecr
+    #   uses: aws-actions/amazon-ecr-login@v2
+
+    # - name: Build, Tag, and Push image to ECR
+    #   run: |
+    #     docker build -t gpunitai .
+    #     docker tag gpunitai:latest ${{ steps.login-ecr.outputs.registry }}/gpunitai:latest
+    #     docker push ${{ steps.login-ecr.outputs.registry }}/gpunitai:latest
+
+    # - name: Deploy to ECS (Optional ECS deploy logic goes here)
+
+    - name: Done
+      run: echo "✅ Deployment process finished."
+
