@@ -17,13 +17,18 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: '3.10'
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           python install_cuquantum.py
+
+      - name: Cleanup old Docker images
+        run: |
+          docker system prune -af
 
       - name: Build Docker Images
         run: |
@@ -38,5 +43,3 @@ jobs:
         run: |
           echo "🚀 Trigger your deployment pipeline here"
           # Example: rsync, SSH, Docker push, or Kubernetes apply
-
-
